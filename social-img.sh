@@ -12,8 +12,6 @@ to use).
 # get script directory and path of background file
 script_dir="$(dirname "$(realpath $0)")"
 tile_file="$script_dir/patterns/pattern-yellow-white-50.png"
-# set default font
-font="rooneysansweb-bold"
 # parse args
 while getopts "hi:c:t:o:" arg; do
     case $arg in
@@ -54,6 +52,10 @@ while getopts "hi:c:t:o:" arg; do
         ;;
     esac
 done
+# set default font if value is empty
+if [[ -z "$font" ]]; then
+    font="rooneysansweb-bold"
+fi
 # set output file extension as PNG (needed because JPEG doesn't support transparency)
 output="${output/'.jpg'/'.png'}"
 output="${output/'.jpeg'/'.png'}"
