@@ -60,11 +60,17 @@ fi
 output="${output/'.jpg'/'.png'}"
 output="${output/'.jpeg'/'.png'}"
 # resize to 1080p if larger (some socials have a limit on image size, this reduces it)
-magick "$input" -scale "1080x1080>" "$output"
+input_width=$(identify -format '%w' "$input")
+input_height=$(identify -format '%h' "$input")
+if [[ $input_width -gt 1080 || $input_height -gt 1080 ]]; then
+    magick "$input" -scale "1080x1080>" "$output"
+    input_width=$(identify -format '%w' "$output")
+    input_height=$(identify -format '%h' "$output")
+else
+    cp "$input" "$output"
+fi
 # if image is too much stretched, add some transparent border (Instagram has
 # annoying aspect ratio limitations)
-input_width=$(identify -format '%w' "$output")
-input_height=$(identify -format '%h' "$output")
 if [[ $((10 * $input_width / $input_height)) -gt 20 ]]; then
     input_height=$(($input_width / 2))
     magick -size "${input_width}x${input_height}" xc:none \( "$output" \) -gravity 'center' -geometry '+0+0' -composite "$output"
@@ -88,12 +94,17 @@ fi
 shadowsize=$(($border / 14))
 shadow="100x$shadowsize+$shadowsize+$shadowsize"
 shadowcolor="black"
-magick -size "${output_width}x${output_height}" tile:"$tile_file" \( "$output" \( +clone -background "$shadowcolor" -shadow "$shadow" \) +swap -background none -layers merge +repage \) -gravity "south" -geometry "+0+$border" -composite "$output"
+img_with_bg="-size '${output_width}x${output_height}' tile:'$tile_file' \( '$output' \( +clone -background '$shadowcolor' -shadow '$shadow' \) +swap -background none -layers merge +repage \) -gravity 'south' -geometry '+0+$border' -composite"
 if [[ -z "$text" ]]; then
-    # print final message without text
+    # add base without text
+    command="magick $img_with_bg '$output'"
+    eval $command
+    # print final message
     echo "Image generated from '$input' and saved as '$output'"
 else
-    magick "$output" \( -size "${input_width}x$((2 * $border))" -font "$font" -fill "#f6bd1f" -background "none" label:"$text" -trim -gravity "center" -extent "${input_width}x$((2 * $border))" \( +clone -background "$shadowcolor" -shadow "$shadow" \) +swap -background none -layers merge +repage \) -gravity "north" -geometry "+0+$(($border / 2))" -composite "$output"
-    # print final message with text
+    # add base with text
+    command="magick \( $img_with_bg \) \( -size '${input_width}x$((2 * $border))' -font '$font' -fill '#f6bd1f' -background 'none' label:'$text' -trim -gravity 'center' -extent '${input_width}x$((2 * $border))' \( +clone -background '$shadowcolor' -shadow '$shadow' \) +swap -background none -layers merge +repage \) -gravity 'north' -geometry '+0+$(($border / 2))' -composite '$output'"
+    eval $command
+    # print final message
     echo "Image generated from '$input' with text '$text' and saved as '$output'"
 fi
