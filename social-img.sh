@@ -94,17 +94,19 @@ fi
 shadowsize=$(($border / 14))
 shadow="100x$shadowsize+$shadowsize+$shadowsize"
 shadowcolor="black"
-img_with_bg="-size '${output_width}x${output_height}' tile:'$tile_file' \( '$output' \( +clone -background '$shadowcolor' -shadow '$shadow' \) +swap -background none -layers merge +repage \) -gravity 'south' -geometry '+0+$border' -composite"
+img_with_bg="-size '${output_width}x${output_height}' tile:'$tile_file' \( \"$output\" \( +clone -background '$shadowcolor' -shadow '$shadow' \) +swap -background none -layers merge +repage \) -gravity 'south' -geometry '+0+$border' -composite"
 if [[ -z "$text" ]]; then
-    # add base without text
-    command="magick $img_with_bg '$output'"
+    # add background only
+    command="magick $img_with_bg \"$output\""
+    #echo "$command"
     eval $command
     # print final message
-    echo "Image generated from '$input' and saved as '$output'"
+    echo "Image generated from \"$input\" and saved as \"$output\""
 else
-    # add base with text
-    command="magick \( $img_with_bg \) \( -size '${input_width}x$((2 * $border))' -font '$font' -fill '#f6bd1f' -background 'none' label:'$text' -trim -gravity 'center' -extent '${input_width}x$((2 * $border))' \( +clone -background '$shadowcolor' -shadow '$shadow' \) +swap -background none -layers merge +repage \) -gravity 'north' -geometry '+0+$(($border / 2))' -composite '$output'"
+    # add background and text
+    command="magick \( $img_with_bg \) \( -size '${input_width}x$((2 * $border))' -font '$font' -fill '#f6bd1f' -background 'none' label:'$text' -trim -gravity 'center' -extent '${input_width}x$((2 * $border))' \( +clone -background '$shadowcolor' -shadow '$shadow' \) +swap -background none -layers merge +repage \) -gravity 'north' -geometry '+0+$(($border / 2))' -composite \"$output\""
+    #echo "$command"
     eval $command
     # print final message
-    echo "Image generated from '$input' with text '$text' and saved as '$output'"
+    echo "Image generated from \"$input\" with text '$text' and saved as \"$output\""
 fi

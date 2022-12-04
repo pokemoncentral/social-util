@@ -37,16 +37,16 @@ mkdir -p "$output"
 # invoke social-img.sh for each file
 for item in "$2"/*; do
     if [[ -f "$item" ]]; then
-        command="bash '$script_dir'/social-img.sh -i '$item'"
+        command="bash \"$script_dir\"/social-img.sh -i \"$item\""
         if [[ ! -z "$cat" ]]; then
-            command+=" -c '$cat'"
+            command+=" -c \"$cat\""
         elif [[ ! -z "$text" ]]; then
-            command+=" -t '$text'"
+            command+=" -t \"$text\""
         fi
         if [[ ! -z "$font" ]]; then
-            command+=" -f '$font'"
+            command+=" -f \"$font\""
         fi
-        command+=" -o '$output/$(basename "$item")'"
+        command+=" -o \"$output/$(basename "$item")\""
         #echo "$command"
         eval $command
     fi
