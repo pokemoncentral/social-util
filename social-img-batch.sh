@@ -6,7 +6,7 @@ processed in batch and saved in output directory."
 # get script directory
 script_dir="$(dirname "$(realpath $0)")"
 # parse args
-while getopts "hi:c:t:o:" arg; do
+while getopts "hi:l:c:t:o:" arg; do
     case $arg in
     h)
         echo "$help"
@@ -14,6 +14,9 @@ while getopts "hi:c:t:o:" arg; do
         ;;
     i)
         input="$OPTARG"
+        ;;
+    l)
+        limit="$OPTARG"
         ;;
     c)
         cat="$OPTARG"
@@ -38,6 +41,9 @@ mkdir -p "$output"
 for item in "$2"/*; do
     if [[ -f "$item" ]]; then
         command="bash \"$script_dir\"/social-img.sh -i \"$item\""
+        if [[ ! -z "$limit" ]]; then
+            command+=" -l \"$limit\""
+        fi
         if [[ ! -z "$cat" ]]; then
             command+=" -c \"$cat\""
         elif [[ ! -z "$text" ]]; then

@@ -3,6 +3,10 @@
 help="This script generates images for Pokémon Central socials: is uses a
 pattern as background and adds text if provided. Arguments:
 -i: path of input file.
+-l: before being put on background, input image is resized to have both width
+and height not greater than this value (some socials have limits on image size
+and this scaling helps reduce it); default is 1080, 0 can be passed to avoid
+this resizing and use the image as is.
 -c: category (determines text), can be 'uo' for '#UscivaOggi', 'pb' for
 '#PokeBirthday', 'spo' for '#SeriePokemonOggi'.
 -t: can be used to add a different text.
@@ -13,7 +17,7 @@ to use).
 script_dir="$(dirname "$(realpath $0)")"
 tile_file="$script_dir/patterns/pattern-yellow-white-50.png"
 # parse args
-while getopts "hi:c:t:o:" arg; do
+while getopts "hi:l:c:t:o:" arg; do
     case $arg in
     h)
         echo "$help"
@@ -21,6 +25,9 @@ while getopts "hi:c:t:o:" arg; do
         ;;
     i)
         input="$OPTARG"
+        ;;
+    l)
+        limit="$OPTARG"
         ;;
     c)
         case $OPTARG in
@@ -56,13 +63,17 @@ done
 if [[ -z "$font" ]]; then
     font="rooneysansweb-bold"
 fi
+# set default size limit if not specified
+if [[ -z "$limit" ]]; then
+    limit=1080
+fi
 # set output file extension as PNG (needed because JPEG doesn't support transparency)
 output="${output/'.jpg'/'.png'}"
 output="${output/'.jpeg'/'.png'}"
-# resize to 1080p if larger (some socials have a limit on image size, this reduces it)
+# resize if greater than limit
 input_width=$(identify -format '%w' "$input")
 input_height=$(identify -format '%h' "$input")
-if [[ $input_width -gt 1080 || $input_height -gt 1080 ]]; then
+if [[ $limit -gt 0 && ($input_width -gt $limit || $input_height -gt $limit) ]]; then
     magick "$input" -scale "1080x1080>" "$output"
     input_width=$(identify -format '%w' "$output")
     input_height=$(identify -format '%h' "$output")
