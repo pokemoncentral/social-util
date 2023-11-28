@@ -7,9 +7,12 @@ pattern as background and adds text if provided. Arguments:
 and height not greater than this value (some socials have limits on image size
 and this scaling helps reduce it); default is 1080, 0 can be passed to avoid
 this resizing and use the image as is.
--c: category (determines text), can be 'uo' for '#UscivaOggi', 'pb' for
-'#PokeBirthday', 'spo' for '#SeriePokemonOggi'.
--t: can be used to add a different text.
+-t: used to set the text; if both this and -c are not provided no text will be
+added to final image.
+-c: shortcuts for frequently used texts:
+    + 'uo' for '#UscivaOggi'
+    + 'pb' for '#PokeBirthday'
+    + 'spo' for '#SeriePokemonOggi'
 -f: to specify a different font (by default uses RooneySansWeb which is not free
 to use).
 -o: path of output file."
@@ -29,6 +32,9 @@ while getopts "hi:l:c:t:o:" arg; do
     l)
         limit="$OPTARG"
         ;;
+    t)
+        text="$OPTARG"
+        ;;
     c)
         case $OPTARG in
         uo)
@@ -44,9 +50,6 @@ while getopts "hi:l:c:t:o:" arg; do
             exit 1
             ;;
         esac
-        ;;
-    t)
-        text="$OPTARG"
         ;;
     f)
         font="$OPTARG"
@@ -71,12 +74,16 @@ fi
 output="${output/'.jpg'/'.png'}"
 output="${output/'.jpeg'/'.png'}"
 # resize if greater than limit
-input_width=$(identify -format '%w' "$input")
-input_height=$(identify -format '%h' "$input")
-if [[ $limit -gt 0 && ($input_width -gt $limit || $input_height -gt $limit) ]]; then
-    magick "$input" -scale "1080x1080>" "$output"
-    input_width=$(identify -format '%w' "$output")
-    input_height=$(identify -format '%h' "$output")
+if [[ $limit -gt 0 ]]; then
+    input_width=$(identify -format '%w' "$input")
+    input_height=$(identify -format '%h' "$input")
+    if [[ $input_width -gt $limit || $input_height -gt $limit ]]; then
+        magick "$input" -scale "${limit}x${limit}>" "$output"
+        input_width=$(identify -format '%w' "$output")
+        input_height=$(identify -format '%h' "$output")
+    else
+        cp "$input" "$output"
+    fi
 else
     cp "$input" "$output"
 fi
@@ -109,15 +116,14 @@ img_with_bg="-size '${output_width}x${output_height}' tile:'$tile_file' \( \"$ou
 if [[ -z "$text" ]]; then
     # add background only
     command="magick $img_with_bg \"$output\""
-    #echo "$command"
-    eval $command
-    # print final message
-    echo "Image generated from \"$input\" and saved as \"$output\""
+    # set final message
+    message="Image generated from \"$input\" and saved as \"$output\""
 else
     # add background and text
     command="magick \( $img_with_bg \) \( -size '${input_width}x$((2 * $border))' -font '$font' -fill '#f6bd1f' -background 'none' label:'$text' -trim -gravity 'center' -extent '${input_width}x$((2 * $border))' \( +clone -background '$shadowcolor' -shadow '$shadow' \) +swap -background none -layers merge +repage \) -gravity 'north' -geometry '+0+$(($border / 2))' -composite \"$output\""
-    #echo "$command"
-    eval $command
-    # print final message
-    echo "Image generated from \"$input\" with text '$text' and saved as \"$output\""
+    # set final message
+    message="Image generated from \"$input\" with text '$text' and saved as \"$output\""
 fi
+#echo "$command"
+eval $command
+echo "$message"
