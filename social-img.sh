@@ -7,6 +7,8 @@ pattern as background and adds text if provided. Arguments:
 and height not greater than this value (some socials have limits on image size
 and this scaling helps reduce it); default is 1080, 0 can be passed to avoid
 this resizing and use the image as is.
+-b: to specify border size (can be useful when using image with some transparent
+background, be careful using it with text).
 -t: used to set the text; if both this and -c are not provided no text will be
 added to final image.
 -c: shortcuts for frequently used texts:
@@ -20,7 +22,7 @@ to use).
 script_dir="$(dirname "$(realpath $0)")"
 tile_file="$script_dir/patterns/pattern-yellow-white-50.png"
 # parse args
-while getopts "hi:l:c:t:o:" arg; do
+while getopts "hi:l:b:c:t:o:" arg; do
     case $arg in
     h)
         echo "$help"
@@ -31,6 +33,9 @@ while getopts "hi:l:c:t:o:" arg; do
         ;;
     l)
         limit="$OPTARG"
+        ;;
+    b)
+        border="$OPTARG"
         ;;
     t)
         text="$OPTARG"
@@ -73,10 +78,11 @@ fi
 # set output file extension as PNG (needed because JPEG doesn't support transparency)
 output="${output/'.jpg'/'.png'}"
 output="${output/'.jpeg'/'.png'}"
+# get width and heoght of input image
+input_width=$(identify -format '%w' "$input")
+input_height=$(identify -format '%h' "$input")
 # resize if greater than limit
 if [[ $limit -gt 0 ]]; then
-    input_width=$(identify -format '%w' "$input")
-    input_height=$(identify -format '%h' "$input")
     if [[ $input_width -gt $limit || $input_height -gt $limit ]]; then
         magick "$input" -scale "${limit}x${limit}>" "$output"
         input_width=$(identify -format '%w' "$output")
@@ -97,10 +103,12 @@ elif [[ $input_height -gt $input_width ]]; then
     magick -size "${input_width}x${input_height}" xc:none \( "$output" \) -gravity 'center' -geometry '+0+0' -composite "$output"
 fi
 # compute final width and height, more upper border is added if text is needed
-if [[ $input_width -gt $input_height ]]; then
-    border=$(($input_width / 10))
-else
-    border=$(($input_height / 10))
+if [[ -z "$border" ]]; then
+    if [[ $input_width -gt $input_height ]]; then
+        border=$(($input_width / 10))
+    else
+        border=$(($input_height / 10))
+    fi
 fi
 output_width=$(($input_width + 2 * $border))
 if [[ -z "$text" ]]; then
