@@ -78,7 +78,7 @@ fi
 # set output file extension as PNG (needed because JPEG doesn't support transparency)
 output="${output/'.jpg'/'.png'}"
 output="${output/'.jpeg'/'.png'}"
-# get width and heoght of input image
+# get width and height of input image
 input_width=$(identify -format '%w' "$input")
 input_height=$(identify -format '%h' "$input")
 # resize if greater than limit
