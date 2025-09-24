@@ -6,7 +6,7 @@ processed in batch and saved in output directory."
 # get script directory
 script_dir="$(dirname "$(realpath $0)")"
 # parse args
-while getopts "hi:l:c:t:o:" arg; do
+while getopts "hi:l:c:t:f:p:o:" arg; do
     case $arg in
     h)
         echo "$help"
@@ -26,6 +26,9 @@ while getopts "hi:l:c:t:o:" arg; do
         ;;
     f)
         font="$OPTARG"
+        ;;
+    p)
+        tile_file="$OPTARG"
         ;;
     o)
         output="$OPTARG"
@@ -51,6 +54,9 @@ for item in "$2"/*; do
         fi
         if [[ ! -z "$font" ]]; then
             command+=" -f \"$font\""
+        fi
+        if [[ ! -z "$tile_file" ]]; then
+            command+=" -p \"$tile_file\""
         fi
         command+=" -o \"$output/$(basename "$item")\""
         #echo "$command"
