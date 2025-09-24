@@ -2,7 +2,8 @@
 
 help="This script generates an image from a pattern contained in patterns/ directory,
 saving it in backgrounds/ directory. Arguments:
--p: pattern to use (only part between 'pattern-' and '.png')."
+-p: pattern to use (only part between 'pattern-' and '.png').
+-s: size of output image (default 1080x1920)."
 # get script directory
 script_dir="$(dirname "$(realpath $0)")"
 # parse args

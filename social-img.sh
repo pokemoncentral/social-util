@@ -17,12 +17,16 @@ added to final image.
     + 'spo' for '#SeriePokemonOggi'
 -f: to specify a different font (by default uses RooneySansWeb which is not free
 to use).
+-p: pattern to use (by default patterns/pattern-yellow-white-50.png).
 -o: path of output file."
 # get script directory and path of background file
 script_dir="$(dirname "$(realpath $0)")"
 tile_file="$script_dir/patterns/pattern-yellow-white-50.png"
+# set default values for some args
+font="rooneysansweb-bold"
+limit=1080
 # parse args
-while getopts "hi:l:b:c:t:o:" arg; do
+while getopts "hi:l:b:t:c:f:p:o:" arg; do
     case $arg in
     h)
         echo "$help"
@@ -59,6 +63,9 @@ while getopts "hi:l:b:c:t:o:" arg; do
     f)
         font="$OPTARG"
         ;;
+    p)
+        tile_file="$OPTARG"
+        ;;
     o)
         output="$OPTARG"
         ;;
@@ -67,14 +74,6 @@ while getopts "hi:l:b:c:t:o:" arg; do
         ;;
     esac
 done
-# set default font if value is empty
-if [[ -z "$font" ]]; then
-    font="rooneysansweb-bold"
-fi
-# set default size limit if not specified
-if [[ -z "$limit" ]]; then
-    limit=1080
-fi
 # set output file extension as PNG (needed because JPEG doesn't support transparency)
 output="${output/'.jpg'/'.png'}"
 output="${output/'.jpeg'/'.png'}"
